@@ -2,15 +2,15 @@ package io.pedro.santos.dev
 
 import io.ktor.application.*
 import io.ktor.response.*
-import io.ktor.request.*
 import io.ktor.features.*
 import io.ktor.routing.*
 import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.gson.*
 import io.ktor.auth.*
-import io.ktor.client.*
-import io.ktor.client.features.json.*
-import io.ktor.client.request.*
-import kotlinx.coroutines.*
+import io.ktor.auth.jwt.*
+import io.pedro.santos.dev.modules.authorization.JwtConfig
+import io.pedro.santos.dev.modules.authorization.PostLogin
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -30,14 +30,37 @@ fun Application.module(testing: Boolean = false) {
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
 
+    install(DefaultHeaders)
+    install(CallLogging)
+
     install(StatusPages) {
         exception<Throwable> { e ->
             call.respondText(e.localizedMessage,ContentType.Text.Plain, HttpStatusCode.InternalServerError)
         }
     }
 
-    install(Authentication) {
+    install(ContentNegotiation) {
+        gson {
+            setPrettyPrinting()
+            disableHtmlEscaping()
+        }
+    }
 
+    val realm = environment.config.property("jwt.realm").getString()
+    install(Authentication) {
+        jwt {
+            this.realm = realm
+            verifier(JwtConfig.verifier)
+            validate {
+                val username = it.payload.getClaim("username").asString()
+                val password = it.payload.getClaim("password").asString()
+                if (username != null && password != null) {
+                    PostLogin(username, password)
+                } else {
+                    null
+                }
+            }
+        }
     }
 
     /* val client = HttpClient() {
@@ -58,13 +81,29 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get("/") {
-            call.respondText("HELLO WORLD!", contentType = ContentType.Application.Json)
+            call.respond(HttpStatusCode.BadRequest)
         }
         post("/oauth/auth") {
-            call.respondText("LOGIN!", contentType = ContentType.Application.Json)
+            val postLogin = call.receive<PostLogin>()
+            print(postLogin)
+            if(postLogin != null) {
+                val token = JwtConfig.generateToken(postLogin)
+                call.respond(JsonRensponse(200, mapOf("access_token" to token, "expires_at" to "")))
+            } else {
+                call.respond(JsonRensponse(400, mapOf("message" to "missing parameters"), "error"))
+            }
+        }
+        authenticate {
+            route("/oauth/me") {
+                handle {
+                    val principal = call.authentication.principal<JWTPrincipal>()
+                    val subjectString = principal!!.payload.subject.removePrefix("auth0|")
+                    call.respondText("Success, $subjectString")
+                }
+            }
         }
     }
 }
 
-data class JsonSampleClass(val status: Short = 200,val data: HttpResponseData, val message: String = "Success")
+data class JsonRensponse<T>(val status: Short = 200, val data: T, val message: String = "Success")
 

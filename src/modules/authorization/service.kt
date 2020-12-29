@@ -1,4 +1,4 @@
-package io.pedro.santos.dev.application.modules.authorization
+package io.pedro.santos.dev.modules.authorization
 
 import java.util.*
 
