@@ -19,7 +19,13 @@ class ApplicationTest {
         withTestApplication({ module(testing = true) }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("HELLO WORLD!", response.content)
+                assertEquals("{\n" +
+                        "  \"status\": 200,\n" +
+                        "  \"data\": {\n" +
+                        "    \"message\": \"API ACTIVE!\"\n" +
+                        "  },\n" +
+                        "  \"message\": \"Success\"\n" +
+                        "}", response.content)
             }
         }
     }

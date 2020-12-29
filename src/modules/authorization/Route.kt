@@ -2,6 +2,7 @@ package io.pedro.santos.dev.modules.authorization
 
 import io.ktor.application.*
 import io.ktor.auth.*
+import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -12,14 +13,14 @@ fun Route.authorization(){
         post("/auth") {
             val postLogin = call.receive<PostLogin>()
             when (postLogin) {
-                null -> call.respond(JsonResponse(400, mapOf("message" to "missing parameters"), "error"))
-                else -> call.respond(JsonResponse(200, JwtConfig.accessToken(postLogin)))
+                null -> call.respond(JsonResponse(HttpStatusCode.BadRequest.value, mapOf("message" to "missing parameters"), "error"))
+                else -> call.respond(JsonResponse(HttpStatusCode.OK.value, JwtConfig.accessToken(postLogin)))
             }
         }
         authenticate {
             get("/me") {
                 val principal = call.principal<PostLogin>() ?: error("No principal decoded")
-                call.respond(JsonResponse(200, mapOf("user" to principal)))
+                call.respond(JsonResponse(HttpStatusCode.OK.value, mapOf("user" to principal)))
             }
         }
     }

@@ -1,14 +1,17 @@
 package io.pedro.santos.dev.modules.user
 
 import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.sql.Column
+import org.joda.time.DateTime
 
-data class User(val id: Int, val username: String, val password: String)
+data class User(val id: Int, val username: String, val password: String, val active: Boolean)
 
 object UsersTable: IntIdTable("users") {
-    val username = varchar("username", 255).uniqueIndex()
-    val password = varchar("password", 255)
+    val username: Column<String> = varchar("username", 255).uniqueIndex()
+    val password: Column<String> = varchar("password", 255)
+    val active: Column<Boolean> = bool("active")
 
-    val createdAt = datetime("created_at")
-    val modifiedAt = datetime("modified_at").nullable()
-    val deletedAt = datetime("deleted_at").nullable()
+    val createdAt: Column<DateTime> = datetime("created_at")
+    val modifiedAt: Column<DateTime?> = datetime("modified_at").nullable()
+    val deletedAt: Column<DateTime?> = datetime("deleted_at").nullable()
 }

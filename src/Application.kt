@@ -37,7 +37,7 @@ fun Application.module(testing: Boolean = false) {
 
     install(StatusPages) {
         status(HttpStatusCode.NotFound) {
-            call.respond(HttpStatusCode.NotFound, JsonResponse(404, mapOf("message" to "not found"), "error"))
+            call.respond(HttpStatusCode.NotFound, JsonResponse(HttpStatusCode.NotFound.value, mapOf("message" to "not found"), "error"))
         }
 
         exception<Throwable> { cause -> call.respond(HttpStatusCode.NotFound, mapOf("message" to cause.message, "code" to HttpStatusCode.NotFound)) }
@@ -83,10 +83,10 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get("/") {
-            call.respond(HttpStatusCode.BadRequest)
+            call.respond(HttpStatusCode.OK, JsonResponse(HttpStatusCode.OK.value, mapOf("message" to "API ACTIVE!")))
         }
         authorization()
     }
 }
 
-data class JsonResponse<T>(val status: Short = 200, val data: T, val message: String = "Success")
+data class JsonResponse<T>(val status: Int = HttpStatusCode.OK.value, val data: T, val message: String = "Success")
