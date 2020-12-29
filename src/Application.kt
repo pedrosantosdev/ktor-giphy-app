@@ -78,6 +78,9 @@ fun Application.module(testing: Boolean = false) {
         }
         */
     // }
+    val secret = environment.config.property("jwt.secret").getString()
+    val issuer = environment.config.property("jwt.domain").getString()
+    val audience = environment.config.property("jwt.audience").getString()
 
     routing {
         get("/") {

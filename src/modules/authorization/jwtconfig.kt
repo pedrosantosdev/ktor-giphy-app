@@ -3,14 +3,15 @@ package io.pedro.santos.dev.modules.authorization
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.typesafe.config.ConfigFactory
+import io.ktor.config.*
 import io.pedro.santos.dev.modules.authorization.PostLogin
 import java.util.*
 
 object JwtConfig {
-    private const val secret = application.environment.config
-        .propertyOrNull("jwt.secret").getString()
-    private const val issuer = environment.config.property("jwt.domain").getString()
-    private const val audience = environment.config.property("jwt.audience").getString()
+    private val secret = HoconApplicationConfig(ConfigFactory.load("jwt.secret"))?.toString()
+    private val issuer = HoconApplicationConfig(ConfigFactory.load("jwt.domain"))?.toString()
+    private val audience = HoconApplicationConfig(ConfigFactory.load("jwt.audience"))?.toString()
     private const val validityInMs = 36_000_00 * 24 // 1 day
     private val algorithm = Algorithm.HMAC512(secret)
 
