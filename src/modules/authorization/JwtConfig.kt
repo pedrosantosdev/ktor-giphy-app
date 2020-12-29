@@ -5,7 +5,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.typesafe.config.ConfigFactory
 import io.ktor.config.*
-import io.pedro.santos.dev.modules.authorization.PostLogin
+import io.pedro.santos.dev.modules.user.User
 import java.util.*
 
 object JwtConfig {
@@ -26,7 +26,7 @@ object JwtConfig {
     /**
      * Produce a token for this combination of username and password
      */
-    fun generateToken(user: PostLogin): String = JWT.create()
+    private fun generateToken(user: User): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(issuer)
         .withAudience(audience)
@@ -34,11 +34,13 @@ object JwtConfig {
         .withExpiresAt(getExpiration())  // optional
         .sign(algorithm)
 
-    fun accessToken(user: PostLogin) = mapOf("access_token" to generateToken(user), "expires_at" to getExpiration())
+    fun accessToken(user: User): Token = Token(generateToken(user), getExpiration().toString())
 
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
     private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
+
+    data class Token(val access_token: String, val expires_at: String)
 
 }

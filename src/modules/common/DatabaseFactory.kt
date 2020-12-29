@@ -4,9 +4,10 @@ import com.typesafe.config.ConfigFactory
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.config.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import io.pedro.santos.dev.modules.user.UsersTable
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object DatabaseFactory {
@@ -17,10 +18,13 @@ object DatabaseFactory {
     private val dbPassword = appConfig.property("db.dbPassword").getString()
 
     fun init() {
-        Database.connect(hikari())
+        Database.connect(dataSource())
+        transaction {
+            SchemaUtils.create(UsersTable)
+        }
     }
 
-    private fun hikari(): HikariDataSource {
+    private fun dataSource(): HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = "org.postgresql.Driver"
         config.jdbcUrl = dbUrl
@@ -33,8 +37,6 @@ object DatabaseFactory {
         return HikariDataSource(config)
     }
 
-    suspend fun <T> dbQuery(block: () -> T): T =
-        withContext(Dispatchers.IO) {
-            transaction { block() }
-        }
+    suspend fun <T> dbQuery(block: () -> T): T = newSuspendedTransaction { block() }
+
 }

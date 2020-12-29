@@ -12,6 +12,7 @@ import io.ktor.auth.jwt.*
 import io.pedro.santos.dev.modules.authorization.JwtConfig
 import io.pedro.santos.dev.modules.authorization.PostLogin
 import io.pedro.santos.dev.modules.authorization.authorization
+import io.pedro.santos.dev.modules.common.DatabaseFactory
 import java.lang.RuntimeException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -63,6 +64,10 @@ fun Application.module(testing: Boolean = false) {
                 }
             }
         }
+    }
+
+    if(!testing) {
+        DatabaseFactory.init()
     }
 
     /* val client = HttpClient() {

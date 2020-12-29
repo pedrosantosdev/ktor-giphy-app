@@ -23,10 +23,11 @@ services:
     depends_on:
       - "db"
     environment:
+      ENVIRONMENT: dev
       SECRET: "26fca5a53f91a32f73e236c076a48e13173f17d7984d7a38086c69d4c960712d"
       DATABASE_USER: "testuser"
       DATABASE_PASSWORD: "mpassword"
-      DATABASE_URL: ""
+      DATABASE_URL: "jdbc:postgresql://localhost:5432/public"
 
 
 volumes:

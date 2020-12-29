@@ -47,6 +47,7 @@ dependencies {
     compile "org.jetbrains.exposed:exposed:0.17.7"
     compile "com.zaxxer:HikariCP:3.4.5"
     compile "org.postgresql:postgresql:42.2.18"
+    compile "org.springframework.security:spring-security-crypto:5.4.2"
 }
 
 shadowJar {
