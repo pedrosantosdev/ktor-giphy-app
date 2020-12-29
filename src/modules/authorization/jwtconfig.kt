@@ -12,6 +12,7 @@ object JwtConfig {
     private val secret = HoconApplicationConfig(ConfigFactory.load("jwt.secret"))?.toString()
     private val issuer = HoconApplicationConfig(ConfigFactory.load("jwt.domain"))?.toString()
     private val audience = HoconApplicationConfig(ConfigFactory.load("jwt.audience"))?.toString()
+    val realm = HoconApplicationConfig(ConfigFactory.load("jwt.realm"))?.toString()
     private const val validityInMs = 36_000_00 * 24 // 1 day
     private val algorithm = Algorithm.HMAC512(secret)
 
@@ -31,7 +32,6 @@ object JwtConfig {
         .withAudience(audience)
         .withIssuer(issuer)
         .withClaim("username", user.username)
-        .withClaim("password", user.password)
         .withExpiresAt(getExpiration())  // optional
         .sign(algorithm)
 

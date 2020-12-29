@@ -11,6 +11,7 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.pedro.santos.dev.modules.authorization.JwtConfig
 import io.pedro.santos.dev.modules.authorization.PostLogin
+import java.lang.RuntimeException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -34,9 +35,11 @@ fun Application.module(testing: Boolean = false) {
     install(CallLogging)
 
     install(StatusPages) {
-        exception<Throwable> { e ->
-            call.respondText(e.localizedMessage,ContentType.Text.Plain, HttpStatusCode.InternalServerError)
+        status(HttpStatusCode.NotFound) {
+            call.respond(HttpStatusCode.NotFound, JsonResponse(404, mapOf("message" to "not found"), "error"))
         }
+
+        exception<Throwable> { cause -> call.respond(HttpStatusCode.NotFound, mapOf("message" to cause.message, "code" to HttpStatusCode.NotFound)) }
     }
 
     install(ContentNegotiation) {
@@ -46,18 +49,15 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    val realm = environment.config.property("jwt.realm").getString()
     install(Authentication) {
         jwt {
-            this.realm = realm
+            this.realm = JwtConfig.realm
             verifier(JwtConfig.verifier)
             validate {
-                val username = it.payload.getClaim("username").asString()
-                val password = it.payload.getClaim("password").asString()
-                if (username != null && password != null) {
-                    PostLogin(username, password)
-                } else {
+                if(it.payload.getClaim("username").asString().isNullOrEmpty()){
                     null
+                } else {
+                   JWTPrincipal(it.payload)
                 }
             }
         }
@@ -78,9 +78,6 @@ fun Application.module(testing: Boolean = false) {
         }
         */
     // }
-    val secret = environment.config.property("jwt.secret").getString()
-    val issuer = environment.config.property("jwt.domain").getString()
-    val audience = environment.config.property("jwt.audience").getString()
 
     routing {
         get("/") {
@@ -88,25 +85,22 @@ fun Application.module(testing: Boolean = false) {
         }
         post("/oauth/auth") {
             val postLogin = call.receive<PostLogin>()
-            print(postLogin)
-            if(postLogin != null) {
-                val token = JwtConfig.generateToken(postLogin)
-                call.respond(JsonRensponse(200, mapOf("access_token" to token, "expires_at" to "")))
-            } else {
-                call.respond(JsonRensponse(400, mapOf("message" to "missing parameters"), "error"))
+            when(postLogin) {
+                null -> call.respond(JsonResponse(400, mapOf("message" to "missing parameters"), "error"))
+                else -> run {
+                    val token = JwtConfig.generateToken(postLogin)
+                    call.respond(JsonResponse(200, mapOf("access_token" to token, "expires_at" to "")))
+                }
             }
         }
         authenticate {
             route("/oauth/me") {
                 handle {
-                    val principal = call.authentication.principal<JWTPrincipal>()
-                    val subjectString = principal!!.payload.subject.removePrefix("auth0|")
-                    call.respondText("Success, $subjectString")
+                    call.respond(JsonResponse(200, mapOf("okay" to "Okay")))
                 }
             }
         }
     }
 }
 
-data class JsonRensponse<T>(val status: Short = 200, val data: T, val message: String = "Success")
-
+data class JsonResponse<T>(val status: Short = 200, val data: T, val message: String = "Success")
