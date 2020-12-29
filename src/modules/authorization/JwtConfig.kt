@@ -9,10 +9,11 @@ import io.pedro.santos.dev.modules.authorization.PostLogin
 import java.util.*
 
 object JwtConfig {
-    private val secret = HoconApplicationConfig(ConfigFactory.load("jwt.secret"))?.toString()
-    private val issuer = HoconApplicationConfig(ConfigFactory.load("jwt.domain"))?.toString()
-    private val audience = HoconApplicationConfig(ConfigFactory.load("jwt.audience"))?.toString()
-    val realm = HoconApplicationConfig(ConfigFactory.load("jwt.realm"))?.toString()
+    private val appConfig = HoconApplicationConfig(ConfigFactory.load())
+    private val secret = appConfig.property("jwt.secret").toString()
+    private val issuer = appConfig.property("jwt.domain").toString()
+    private val audience = appConfig.property("jwt.audience").toString()
+    val realm = appConfig.property("jwt.realm").toString()
     private const val validityInMs = 36_000_00 * 24 // 1 day
     private val algorithm = Algorithm.HMAC512(secret)
 
@@ -20,7 +21,6 @@ object JwtConfig {
         .require(algorithm)
         .withIssuer(issuer)
         .withAudience(audience)
-        .withIssuer(issuer)
         .build()
 
     /**
@@ -30,10 +30,11 @@ object JwtConfig {
         .withSubject("Authentication")
         .withIssuer(issuer)
         .withAudience(audience)
-        .withIssuer(issuer)
         .withClaim("username", user.username)
         .withExpiresAt(getExpiration())  // optional
         .sign(algorithm)
+
+    fun accessToken(user: PostLogin) = mapOf("access_token" to generateToken(user), "expires_at" to getExpiration())
 
     /**
      * Calculate the expiration Date based on current time + the given validity

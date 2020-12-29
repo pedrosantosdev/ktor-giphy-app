@@ -11,6 +11,7 @@ import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.pedro.santos.dev.modules.authorization.JwtConfig
 import io.pedro.santos.dev.modules.authorization.PostLogin
+import io.pedro.santos.dev.modules.authorization.authorization
 import java.lang.RuntimeException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -46,6 +47,7 @@ fun Application.module(testing: Boolean = false) {
         gson {
             setPrettyPrinting()
             disableHtmlEscaping()
+            setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         }
     }
 
@@ -83,23 +85,7 @@ fun Application.module(testing: Boolean = false) {
         get("/") {
             call.respond(HttpStatusCode.BadRequest)
         }
-        post("/oauth/auth") {
-            val postLogin = call.receive<PostLogin>()
-            when(postLogin) {
-                null -> call.respond(JsonResponse(400, mapOf("message" to "missing parameters"), "error"))
-                else -> run {
-                    val token = JwtConfig.generateToken(postLogin)
-                    call.respond(JsonResponse(200, mapOf("access_token" to token, "expires_at" to "")))
-                }
-            }
-        }
-        authenticate {
-            route("/oauth/me") {
-                handle {
-                    call.respond(JsonResponse(200, mapOf("okay" to "Okay")))
-                }
-            }
-        }
+        authorization()
     }
 }
 
