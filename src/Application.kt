@@ -20,6 +20,9 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+    if (testing) {
+        print("Testing ON!!")
+    }
     install(CORS) {
         method(HttpMethod.Options)
         method(HttpMethod.Get)
@@ -66,9 +69,7 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    if(!testing) {
-        DatabaseFactory.init()
-    }
+    DatabaseFactory.init()
 
     /* val client = HttpClient() {
         install(JsonFeature) {

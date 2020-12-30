@@ -10,24 +10,35 @@ services:
     ports:
       - "54321:5432"
     environment:
-      POSTGRES_USER: "user"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "public"
+      POSTGRES_USER: "${DATABASE_USER}"
+      POSTGRES_PASSWORD: "${DATABASE_PASSWORD}"
+      POSTGRES_DB: "${DATABASE_SCHEMA}"
 
   api:
-    build: .
+    build:
+      context: .
+      args:
+        ENVIRONMENT: "${ENVIRONMENT}"
+        SECRET: "${SECRET}"
+        DATABASE_USER: "${DATABASE_USER}"
+        DATABASE_PASSWORD: "${DATABASE_PASSWORD}"
+        DATABASE_HOST: "${DATABASE_HOST}"
+        DATABASE_PORT: "${DATABASE_PORT}"
+        DATABASE_SCHEMA: "${DATABASE_SCHEMA}"
     ports:
       - "8080:8080"
     links:
-      - "db"
+      - "db:db"
     depends_on:
       - "db"
     environment:
-      ENVIRONMENT: dev
-      SECRET: "26fca5a53f91a32f73e236c076a48e13173f17d7984d7a38086c69d4c960712d"
-      DATABASE_USER: "testuser"
-      DATABASE_PASSWORD: "mpassword"
-      DATABASE_URL: "jdbc:postgresql://localhost:5432/public"
+      ENVIRONMENT: "${ENVIRONMENT}"
+      SECRET: "${SECRET}"
+      DATABASE_USER: "${DATABASE_USER}"
+      DATABASE_PASSWORD: "${DATABASE_PASSWORD}"
+      DATABASE_HOST: "${DATABASE_HOST}"
+      DATABASE_PORT: "${DATABASE_PORT}"
+      DATABASE_SCHEMA: "${DATABASE_SCHEMA}"
 
 
 volumes:

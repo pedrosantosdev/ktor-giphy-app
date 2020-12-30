@@ -13,9 +13,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseFactory {
 
     private val appConfig = HoconApplicationConfig(ConfigFactory.load())
-    private val dbUrl = appConfig.property("db.jdbcUrl").getString()
     private val dbUser = appConfig.property("db.dbUser").getString()
     private val dbPassword = appConfig.property("db.dbPassword").getString()
+    private val dbHost = appConfig.property("db.dbHost").getString()
+    private val dbPort = appConfig.property("db.dbPort").getString()
+    private val dbSchema = appConfig.property("db.dbSchema").getString()
+    private val dbUrl = "jdbc:postgresql://${dbHost}:${dbPort}/${dbSchema}"
 
     fun init() {
         Database.connect(dataSource())
@@ -25,6 +28,7 @@ object DatabaseFactory {
     }
 
     private fun dataSource(): HikariDataSource {
+        print(dbUrl)
         val config = HikariConfig()
         config.driverClassName = "org.postgresql.Driver"
         config.jdbcUrl = dbUrl

@@ -12,7 +12,7 @@ fun Route.authorization(){
     route("/oauth") {
         post("/auth") {
             val login = call.receive<PostLogin>()
-            if (login.username == null || login.password == null) {
+            if (login.username == "" || login.password == "") {
                 call.respond(JsonResponse(HttpStatusCode.BadRequest.value, mapOf("message" to "missing parameters"), "error"))
             } else {
                 val token = AuthorizationService().authenticate(login)
