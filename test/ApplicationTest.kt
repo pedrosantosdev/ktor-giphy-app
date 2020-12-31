@@ -14,19 +14,19 @@ import kotlin.test.*
 import io.ktor.server.testing.*
 
 class ApplicationTest {
-    //@Test
-    //fun testRoot() {
-    //        withTestApplication({ module(testing = true) }) {
-    //        handleRequest(HttpMethod.Get, "/").apply {
-    //            assertEquals(HttpStatusCode.OK, response.status())
-    //            assertEquals("{\n" +
-    //                    "  \"status\": 200,\n" +
-    //                    "  \"data\": {\n" +
-    //                    "    \"message\": \"API ACTIVE!\"\n" +
-    //                    "  },\n" +
-    //                    "  \"message\": \"Success\"\n" +
-    //                    "}", response.content)
-    //        }
-    //    }
-    //}
+    /*@Test
+    fun testRoot() {
+            withTestApplication({ module(testing = true) }) {
+            handleRequest(HttpMethod.Get, "/").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("{\n" +
+                        "  \"status\": 200,\n" +
+                        "  \"data\": {\n" +
+                        "    \"message\": \"API ACTIVE!\"\n" +
+                        "  },\n" +
+                        "  \"message\": \"Success\"\n" +
+                        "}", response.content)
+            }
+        }
+    }*/
 }

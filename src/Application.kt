@@ -13,6 +13,7 @@ import io.pedro.santos.dev.modules.authorization.JwtConfig
 import io.pedro.santos.dev.modules.authorization.PostLogin
 import io.pedro.santos.dev.modules.authorization.authorization
 import io.pedro.santos.dev.modules.common.DatabaseFactory
+import io.pedro.santos.dev.modules.user.UserRepository
 import java.lang.RuntimeException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -43,7 +44,12 @@ fun Application.module(testing: Boolean = false) {
         status(HttpStatusCode.NotFound) {
             call.respond(HttpStatusCode.NotFound, JsonResponse(HttpStatusCode.NotFound.value, mapOf("message" to "not found"), "error"))
         }
-
+        exception<AuthenticationException> { cause ->
+            call.respond(HttpStatusCode.Unauthorized, JsonResponse(HttpStatusCode.Unauthorized.value,mapOf("message" to cause.message), "error"))
+        }
+        exception<AuthorizationException> { cause ->
+            call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.Forbidden.value,mapOf("message" to cause.message), "error"))
+        }
         exception<Throwable> { cause -> call.respond(HttpStatusCode.NotFound, mapOf("message" to cause.message, "code" to HttpStatusCode.NotFound)) }
     }
 
@@ -60,10 +66,9 @@ fun Application.module(testing: Boolean = false) {
             this.realm = JwtConfig.realm
             verifier(JwtConfig.verifier)
             validate {
-                if(it.payload.getClaim("username").asString().isNullOrEmpty()){
-                    null
-                } else {
-                   JWTPrincipal(it.payload)
+                it.payload.getClaim("username").asString()?.let { username ->
+                    UserRepository().findByUsername(username)
+                    JWTPrincipal(it.payload)
                 }
             }
         }
@@ -96,3 +101,5 @@ fun Application.module(testing: Boolean = false) {
 }
 
 data class JsonResponse<T>(val status: Int = HttpStatusCode.OK.value, val data: T, val message: String = "Success")
+data class AuthenticationException(override val message: String = "Authentication failed") : Exception()
+data class AuthorizationException(override val message: String = "You are not authorised to use this service") : Exception()

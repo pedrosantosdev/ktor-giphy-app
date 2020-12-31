@@ -14,7 +14,8 @@ object JwtConfig {
     private val issuer = appConfig.property("jwt.domain").toString()
     private val audience = appConfig.property("jwt.audience").toString()
     val realm = appConfig.property("jwt.realm").toString()
-    private const val validityInMs = 36_000_00 * 24 // 1 day
+    private const val validityInMs = 3600000L * 24L // 1 day
+    private const val refreshValidityInMs = 3600000L * 24L * 7L // 7 days
     private val algorithm = Algorithm.HMAC512(secret)
 
     val verifier: JWTVerifier = JWT
@@ -23,24 +24,29 @@ object JwtConfig {
         .withAudience(audience)
         .build()
 
+    fun verifyToken(token: String): Int? {
+        return verifier.verify(token).claims["id"]?.asInt()
+    }
+
     /**
      * Produce a token for this combination of username and password
      */
-    private fun generateToken(user: User): String = JWT.create()
+    private fun generateToken(user: User, expiration: Long): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(issuer)
         .withAudience(audience)
+        .withClaim("id", user.id.value)
         .withClaim("username", user.username)
-        .withExpiresAt(getExpiration())  // optional
+        .withExpiresAt(getExpiration(expiration))  // optional
         .sign(algorithm)
 
-    fun accessToken(user: User): Token = Token(generateToken(user), getExpiration().toString())
+    fun accessToken(user: User): Token = Token(generateToken(user, validityInMs), generateToken(user, refreshValidityInMs), getExpiration().toString())
 
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
-    private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
+    private fun getExpiration(validity: Long = validityInMs) = Date(System.currentTimeMillis() + validityInMs)
 
-    data class Token(val access_token: String, val expires_at: String)
+    data class Token(val access_token: String, val refresh_token: String, val expires_at: String)
 
 }

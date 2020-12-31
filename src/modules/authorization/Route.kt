@@ -18,14 +18,6 @@ fun Route.authorization(){
                 val token = AuthorizationService().authenticate(login)
                 if (token != null) {
                     call.respond(JsonResponse(HttpStatusCode.OK.value, token))
-                } else {
-                    call.respond(
-                        JsonResponse(
-                            HttpStatusCode.Unauthorized.value,
-                            mapOf("message" to "unauthorized access"),
-                            "error"
-                        )
-                    )
                 }
             }
         }
