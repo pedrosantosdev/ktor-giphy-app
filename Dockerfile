@@ -12,11 +12,11 @@ ARG DATABASE_HOST
 ARG DATABASE_PORT
 ARG DATABASE_SCHEMA
 
-RUN ./gradlew clean build --info
+RUN ./gradlew clean build -x test
 
 FROM openjdk:8-jre-alpine
 
-ENV APPLICATION_USER ktor
+ENV APPLICATION_USER 1033
 RUN adduser -D -g '' $APPLICATION_USER
 
 RUN mkdir /app
