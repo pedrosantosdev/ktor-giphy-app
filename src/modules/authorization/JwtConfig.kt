@@ -46,7 +46,7 @@ object JwtConfig {
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
-    private fun getExpiration(validity: Long = validityInMs) = Date(System.currentTimeMillis() + validityInMs)
+    private fun getExpiration(validity: Long = validityInMs) = Date(System.currentTimeMillis() + validity)
 
     data class Token(val access_token: String, val refresh_token: String, val expires_at: String)
 

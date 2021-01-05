@@ -29,7 +29,7 @@ fun Route.user() {
                 }
 
                 put {
-                    val id = call.parameters["id"]?.toInt() ?: 0
+                    // val id = call.parameters["id"]?.toInt() ?: 0
                     val entity = call.receive<User>()
                     call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().update(entity)))
                 }
