@@ -9,12 +9,15 @@ import io.ktor.request.*
 import io.ktor.gson.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import io.ktor.server.engine.*
 import io.pedro.santos.dev.modules.authorization.JwtConfig
 import io.pedro.santos.dev.modules.authorization.PostLogin
 import io.pedro.santos.dev.modules.authorization.authorization
 import io.pedro.santos.dev.modules.common.DatabaseFactory
 import io.pedro.santos.dev.modules.user.UserRepository
+import io.pedro.santos.dev.modules.user.user
 import java.lang.RuntimeException
+import java.lang.reflect.Modifier
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -32,7 +35,6 @@ fun Application.module(testing: Boolean = false) {
         method(HttpMethod.Delete)
         method(HttpMethod.Patch)
         header(HttpHeaders.Authorization)
-        header("MyCustomHeader")
         allowCredentials = true
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
@@ -50,13 +52,17 @@ fun Application.module(testing: Boolean = false) {
         exception<AuthorizationException> { cause ->
             call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.Forbidden.value,mapOf("message" to cause.message), "error"))
         }
-        exception<Throwable> { cause -> call.respond(HttpStatusCode.NotFound, mapOf("message" to cause.message, "code" to HttpStatusCode.NotFound)) }
+        exception<MissingParamsException> { cause ->
+            call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.BadRequest.value,mapOf("message" to cause.message), "error"))
+        }
+        exception<Throwable> { cause -> call.respond(HttpStatusCode.InternalServerError, JsonResponse(HttpStatusCode.InternalServerError.value, mapOf("message" to cause.message), "error")) }
     }
 
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
             disableHtmlEscaping()
+            excludeFieldsWithModifiers(Modifier.TRANSIENT)
             setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         }
     }
@@ -97,9 +103,11 @@ fun Application.module(testing: Boolean = false) {
             call.respond(HttpStatusCode.OK, JsonResponse(HttpStatusCode.OK.value, mapOf("message" to "API ACTIVE!")))
         }
         authorization()
+        user()
     }
 }
 
 data class JsonResponse<T>(val status: Int = HttpStatusCode.OK.value, val data: T, val message: String = "Success")
 data class AuthenticationException(override val message: String = "Authentication failed") : Exception()
 data class AuthorizationException(override val message: String = "You are not authorised to use this service") : Exception()
+data class MissingParamsException(override val message: String = "Missing Params") : Exception()

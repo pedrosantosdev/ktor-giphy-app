@@ -1,5 +1,6 @@
 package io.pedro.santos.dev.modules.user
 
+import io.pedro.santos.dev.MissingParamsException
 import io.pedro.santos.dev.modules.common.DatabaseFactory.dbQuery
 import io.pedro.santos.dev.modules.common.Repository
 import org.jetbrains.exposed.sql.*
@@ -35,11 +36,13 @@ class UserRepository: Repository<User> {
         }
 
     override suspend fun create(entity: User): User? {
+        if (findByUsername(entity.username) != null) throw MissingParamsException("Username already taken")
+
         val id = dbQuery {
             UsersTable.insertAndGetId{
                 it[UsersTable.username] = entity.username
                 it[UsersTable.password] = BCryptPasswordEncoder().encode(entity.password)
-                it[UsersTable.active] = true
+                it[UsersTable.active] = entity.active
                 it[UsersTable.createdAt] = DateTime.now()
             }
         }
@@ -54,7 +57,7 @@ class UserRepository: Repository<User> {
                 it[UsersTable.modifiedAt] = DateTime.now()
             }
         }
-        return findById(entity.id.value)
+        return findById(entity.id)
     }
 
     override suspend fun deleteById(id: Int): Int =
@@ -67,7 +70,7 @@ class UserRepository: Repository<User> {
 
     private fun toUser(row: ResultRow): User =
         User(
-            id = row[UsersTable.id],
+            id = row[UsersTable.id].value,
             username = row[UsersTable.username],
             active = row[UsersTable.active],
             password = row[UsersTable.password]

@@ -1,11 +1,10 @@
 package io.pedro.santos.dev.modules.user
 
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.joda.time.DateTime
 
-data class User(val id: EntityID<Int>, val username: String, val password: String?, val active: Boolean)
+data class User(val id: Int = 0, val username: String, @Transient val password: String?, val active: Boolean = false)
 
 object UsersTable: IntIdTable("users") {
     val username: Column<String> = varchar("username", 255).uniqueIndex()
