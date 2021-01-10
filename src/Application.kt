@@ -36,7 +36,9 @@ fun Application.module(testing: Boolean = false) {
         method(HttpMethod.Patch)
         header(HttpHeaders.Authorization)
         allowCredentials = true
-        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+        if (testing) {
+            anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
+        }
     }
 
     install(DefaultHeaders)
