@@ -3,8 +3,9 @@ package io.pedro.santos.dev.modules.user
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import org.joda.time.DateTime
+import io.ktor.auth.Principal
 
-data class User(val id: Int = 0, val username: String, @Transient val password: String?, val active: Boolean = false)
+data class User(val id: Int = 0, val username: String, @Transient val password: String?, val active: Boolean = false): Principal
 
 object UsersTable: IntIdTable("users") {
     val username: Column<String> = varchar("username", 255).uniqueIndex()

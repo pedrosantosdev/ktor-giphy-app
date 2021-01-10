@@ -10,6 +10,7 @@ class AuthorizationService {
 
     suspend fun authenticate(login: PostLogin): JwtConfig.Token {
         UserRepository().findByUsername(login.username)?.let { user ->
+            if(!user.active) throw AuthenticationException("User Inactivated, Contact App Administrator")
             if(user.active && BCryptPasswordEncoder().matches(login.password, user.password))
                 return JwtConfig.accessToken(user)
             else throw AuthenticationException("Wrong credentials")

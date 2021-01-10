@@ -73,7 +73,6 @@ fun Application.module(testing: Boolean = false) {
             validate {
                 it.payload.getClaim("username").asString()?.let { username ->
                     UserRepository().findByUsername(username)
-                    JWTPrincipal(it.payload)
                 }
             }
         }
