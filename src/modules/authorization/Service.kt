@@ -1,6 +1,7 @@
 package io.pedro.santos.dev.modules.authorization
 
 import io.pedro.santos.dev.AuthenticationException
+import io.pedro.santos.dev.MissingParamsException
 import io.pedro.santos.dev.modules.user.User
 import io.pedro.santos.dev.modules.user.UserRepository
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -15,5 +16,10 @@ class AuthorizationService {
         } ?: throw AuthenticationException("Wrong credentials")
     }
 
-    suspend fun register(entity: User): User? =  UserRepository().create(entity)
+    suspend fun register(entity: PostLogin): Map<String, String>{
+        val user = User(username = entity.username, password = entity.password, active = false)
+        UserRepository().create(user)?.let { user ->
+            return mapOf("message" to "User Register Success")
+        } ?: throw MissingParamsException("Error In Register")
+    }
 }

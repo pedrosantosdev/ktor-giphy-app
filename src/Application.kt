@@ -24,9 +24,6 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    if (testing) {
-        print("Testing ON!!")
-    }
     install(CORS) {
         method(HttpMethod.Options)
         method(HttpMethod.Get)
@@ -55,7 +52,7 @@ fun Application.module(testing: Boolean = false) {
             call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.Forbidden.value,mapOf("message" to cause.message), "error"))
         }
         exception<MissingParamsException> { cause ->
-            call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.BadRequest.value,mapOf("message" to cause.message), "error"))
+            call.respond(HttpStatusCode.BadRequest, JsonResponse(HttpStatusCode.BadRequest.value,mapOf("message" to cause.message), "error"))
         }
         exception<Throwable> { cause -> call.respond(HttpStatusCode.InternalServerError, JsonResponse(HttpStatusCode.InternalServerError.value, mapOf("message" to cause.message), "error")) }
     }

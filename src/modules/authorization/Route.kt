@@ -8,7 +8,6 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.pedro.santos.dev.JsonResponse
 import io.pedro.santos.dev.MissingParamsException
-import io.pedro.santos.dev.modules.user.User
 
 fun Route.authorization(){
     route("/oauth") {
@@ -18,8 +17,8 @@ fun Route.authorization(){
             else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().authenticate(login)))
         }
         post("/register") {
-            val login = call.receive<User>()
-            if (login.username == "" || login.password == "") throw MissingParamsException()
+            val login = call.receive<PostLogin>()
+            if (login.username.isNullOrEmpty() || login.password.isNullOrEmpty()) throw MissingParamsException()
             else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().register(login)))
         }
         authenticate {
