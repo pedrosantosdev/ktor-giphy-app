@@ -1,1 +1,1 @@
-web: java -server -jar build/libs/ktor-giphy-app-0.0.1.jar
+web: java -jar build/libs/ktor-giphy-app-0.0.1.jar
