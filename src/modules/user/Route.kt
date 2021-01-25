@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.pedro.santos.dev.AuthorizationException
 import io.pedro.santos.dev.JsonResponse
 import io.pedro.santos.dev.MissingParamsException
 
@@ -17,25 +18,28 @@ fun Route.user() {
             }
 
             post {
-                val login = call.receive<User>()
-                if (login.username == "" || login.password == "") throw MissingParamsException()
-                else call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().create(login)))
+                val login = call.receive<Parameters>()
+                if (login["username"].isNullOrEmpty() || login["password"].isNullOrEmpty()) throw MissingParamsException()
+               call.respond(
+                   JsonResponse(HttpStatusCode.OK.value, UserService().create(User( username = login["username"]!!, password = login["password"])))
+               )
             }
 
             route("/{id}") {
                 get {
-                    val id = call.parameters["id"]?.toInt() ?: 0
+                    val id = call.parameters["id"]?.toInt() ?: throw MissingParamsException()
                     call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().findById(id)))
                 }
 
                 put {
-                    // val id = call.parameters["id"]?.toInt() ?: 0
+                    val principal = call.authentication.principal<User>() ?: throw AuthorizationException()
                     val entity = call.receive<User>()
+                    if (principal.username != entity.username) throw AuthorizationException()
                     call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().update(entity)))
                 }
 
                 delete {
-                    val id = call.parameters["id"]?.toInt() ?: 0
+                    val id = call.parameters["id"]?.toInt() ?: throw MissingParamsException()
                     call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().deleteById(id)))
                 }
             }

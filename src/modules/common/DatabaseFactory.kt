@@ -28,7 +28,6 @@ object DatabaseFactory {
     }
 
     private fun dataSource(): HikariDataSource {
-        print(dbUrl)
         val config = HikariConfig()
         config.driverClassName = "org.postgresql.Driver"
         config.jdbcUrl = dbUrl

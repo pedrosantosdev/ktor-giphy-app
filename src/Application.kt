@@ -32,10 +32,10 @@ fun Application.module(testing: Boolean = false) {
         method(HttpMethod.Delete)
         method(HttpMethod.Patch)
         header(HttpHeaders.Authorization)
+        host("localhost:8080", schemes = listOf("http", "https"))
+        host("pedrosantosdev.github.io/giphy-app/", schemes = listOf("https"))
         allowCredentials = true
-        if (testing) {
-            anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
-        }
+        allowNonSimpleContentTypes = true
     }
 
     install(DefaultHeaders)
@@ -52,6 +52,9 @@ fun Application.module(testing: Boolean = false) {
             call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.Forbidden.value,mapOf("message" to cause.message), "error"))
         }
         exception<MissingParamsException> { cause ->
+            call.respond(HttpStatusCode.UnprocessableEntity, JsonResponse(HttpStatusCode.UnprocessableEntity.value, mapOf("message" to cause.message), "error"))
+        }
+        exception<BadRequestException> { cause ->
             call.respond(HttpStatusCode.BadRequest, JsonResponse(HttpStatusCode.BadRequest.value,mapOf("message" to cause.message), "error"))
         }
         exception<Throwable> { cause -> call.respond(HttpStatusCode.InternalServerError, JsonResponse(HttpStatusCode.InternalServerError.value, mapOf("message" to cause.message), "error")) }
@@ -80,22 +83,6 @@ fun Application.module(testing: Boolean = false) {
 
     DatabaseFactory.init()
 
-    /* val client = HttpClient() {
-        install(JsonFeature) {
-            serializer = GsonSerializer()
-        }
-    } */
-    // runBlocking {
-        // Sample for making a HTTP Client request
-        /*
-        val message = client.post<JsonSampleClass> {
-            url("http://127.0.0.1:8080/path/to/endpoint")
-            contentType(ContentType.Application.Json)
-            body = JsonSampleClass(hello = "world")
-        }
-        */
-    // }
-
     routing {
         get("/") {
             call.respond(HttpStatusCode.OK, JsonResponse(HttpStatusCode.OK.value, mapOf("message" to "API ACTIVE!")))
@@ -109,3 +96,4 @@ data class JsonResponse<T>(val status: Int = HttpStatusCode.OK.value, val data: 
 data class AuthenticationException(override val message: String = "Authentication failed") : Exception()
 data class AuthorizationException(override val message: String = "You are not authorised to use this service") : Exception()
 data class MissingParamsException(override val message: String = "Missing Params") : Exception()
+data class BadRequestException(override val message: String = "Bad Request") : Exception()

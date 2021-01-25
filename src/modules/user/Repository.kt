@@ -1,6 +1,6 @@
 package io.pedro.santos.dev.modules.user
 
-import io.pedro.santos.dev.MissingParamsException
+import io.pedro.santos.dev.BadRequestException
 import io.pedro.santos.dev.modules.common.DatabaseFactory.dbQuery
 import io.pedro.santos.dev.modules.common.Repository
 import org.jetbrains.exposed.sql.*
@@ -19,8 +19,8 @@ class UserRepository: Repository<User> {
         dbQuery {
             UsersTable.select{
                 UsersTable.id eq id
-                UsersTable.deletedAt eq null
-            }.limit(1).map {
+            }.andWhere { UsersTable.deletedAt eq null }.
+            limit(1).map {
                 toUser(it)
             }.firstOrNull()
         }
@@ -29,14 +29,15 @@ class UserRepository: Repository<User> {
         dbQuery {
             UsersTable.select{
                 UsersTable.username eq username
-                UsersTable.deletedAt eq null
+//                UsersTable.deletedAt eq null
             }.limit(1).map{
                 toUser(it)
             }.firstOrNull()
         }
 
     override suspend fun create(entity: User): User? {
-        if (findByUsername(entity.username) != null) throw MissingParamsException("Username already taken")
+        println(findByUsername(entity.username))
+        if (findByUsername(entity.username) != null) throw BadRequestException("Username already taken")
 
         val id = dbQuery {
             UsersTable.insertAndGetId{
@@ -57,7 +58,17 @@ class UserRepository: Repository<User> {
                 it[UsersTable.modifiedAt] = DateTime.now()
             }
         }
+        if (!entity.password.isNullOrEmpty()) changePassword(entity.id, entity.password)
         return findById(entity.id)
+    }
+
+    suspend fun changePassword(id: Int, password: String) {
+        dbQuery {
+            UsersTable.update({ UsersTable.id eq id }, limit = 1) {
+                it[UsersTable.password] = BCryptPasswordEncoder().encode(password)
+                it[UsersTable.modifiedAt] = DateTime.now()
+            }
+        }
     }
 
     override suspend fun deleteById(id: Int): Int =

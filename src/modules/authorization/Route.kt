@@ -13,14 +13,14 @@ import io.pedro.santos.dev.modules.user.User
 fun Route.authorization(){
     route("/oauth") {
         post("/auth") {
-            val login = call.receive<PostLogin>()
-            if (login.username.isNullOrEmpty() || login.password.isNullOrEmpty()) throw MissingParamsException()
-            else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().authenticate(login)))
+            val login = call.receive<Parameters>()
+            if (login["username"].isNullOrEmpty() || login["password"].isNullOrEmpty()) throw MissingParamsException()
+            else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().authenticate(PostLogin(username = login["username"]!!, password = login["password"]!!))))
         }
         post("/register") {
-            val login = call.receive<PostLogin>()
-            if (login.username.isNullOrEmpty() || login.password.isNullOrEmpty()) throw MissingParamsException()
-            else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().register(login)))
+            val login = call.receive<Parameters>()
+            if (login["username"].isNullOrEmpty() || login["password"].isNullOrEmpty()) throw MissingParamsException()
+            else call.respond(JsonResponse(HttpStatusCode.OK.value, AuthorizationService().register(PostLogin(username = login["username"]!!, password = login["password"]!!))))
         }
         authenticate {
             get("/me") {
