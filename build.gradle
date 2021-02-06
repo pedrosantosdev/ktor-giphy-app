@@ -60,4 +60,3 @@ shadowJar {
     }
 }
 
-task stage(dependsOn: ['build', 'clean'])
