@@ -19,8 +19,7 @@ jobs:
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Build and push
-        run: heroku container:push -a "$HEROKU_APP_NAME" web
-        with:
+        env:
           ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
           SECRET: ${{ secrets.SECRET }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
@@ -28,5 +27,6 @@ jobs:
           DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
           DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
           DATABASE_SCHEMA: ${{ secrets.DATABASE_SCHEMA }}
+        run: heroku container:push -a "$HEROKU_APP_NAME" web
       - name: Release
         run: heroku container:release -a "$HEROKU_APP_NAME" web
