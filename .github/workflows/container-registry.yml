@@ -8,25 +8,24 @@ on:
   workflow_dispatch:
 
 env:
+  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-  ENVIRONMENT: ''
-  SECRET: ''
-  DATABASE_USER: ''
-  DATABASE_PASSWORD: ''
-  DATABASE_HOST: ''
-  DATABASE_PORT: ''
-  DATABASE_SCHEMA: ''
+  ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+  SECRET: ${{ secrets.SECRET }}
+  DATABASE_USER: ${{ secrets.DATABASE_USER }}
+  DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+  DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+  DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+  DATABASE_SCHEMA: ${{ secrets.DATABASE_SCHEMA }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Test Env
-        run: echo ${{ env.heroku-prod.ENVIRONMENT }}
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Build and push
-        run: heroku container:push -a ${{ secrets.HEROKU_APP_NAME }} web
+        run: heroku container:push -a "$HEROKU_APP_NAME" web
       - name: Release
-        run: heroku container:release -a ${{ secrets.HEROKU_APP_NAME }} web
+        run: heroku container:release -a "$HEROKU_APP_NAME" web
