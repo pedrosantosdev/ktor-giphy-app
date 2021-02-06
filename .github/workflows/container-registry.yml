@@ -9,12 +9,21 @@ on:
 
 env:
   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+  ENVIRONMENT: ''
+  SECRET: ''
+  DATABASE_USER: ''
+  DATABASE_PASSWORD: ''
+  DATABASE_HOST: ''
+  DATABASE_PORT: ''
+  DATABASE_SCHEMA: ''
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Test Env
+        run: echo ${{ env.heroku-prod.ENVIRONMENT }}
       - name: Login to Heroku Container registry
         run: heroku container:login
       - name: Build and push
