@@ -1,6 +1,8 @@
 package io.pedro.santos.dev.modules.authorization
 
+import io.ktor.auth.*
 import io.pedro.santos.dev.AuthenticationException
+import io.pedro.santos.dev.AuthorizationException
 import io.pedro.santos.dev.BadRequestException
 import io.pedro.santos.dev.modules.user.User
 import io.pedro.santos.dev.modules.user.UserRepository
@@ -19,8 +21,16 @@ class AuthorizationService {
 
     suspend fun register(entity: PostLogin): Map<String, String>{
         val user = User(username = entity.username, password = entity.password, active = false)
-        UserRepository().create(user)?.let { user ->
+        UserRepository().create(user)?.let {
             return mapOf("message" to "User Register Success")
         } ?: throw BadRequestException("Error In Register")
+    }
+
+    suspend fun refreshToken(refreshToken: String): JwtConfig.Token {
+        JwtConfig.verifyToken(refreshToken)?.let { id ->
+            UserRepository().findById(id)?.let { user ->
+                return JwtConfig.accessToken(user)
+            } ?: throw AuthorizationException()
+        } ?: throw AuthorizationException()
     }
 }

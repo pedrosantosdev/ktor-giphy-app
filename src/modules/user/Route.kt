@@ -14,33 +14,33 @@ fun Route.user() {
     authenticate {
         route("/users") {
             get {
-                call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().findAll()))
+                call.respond(JsonResponse(UserService().findAll()))
             }
 
             post {
                 val login = call.receive<Parameters>()
                 if (login["username"].isNullOrEmpty() || login["password"].isNullOrEmpty()) throw MissingParamsException()
                call.respond(
-                   JsonResponse(HttpStatusCode.OK.value, UserService().create(User( username = login["username"]!!, password = login["password"])))
+                   JsonResponse(UserService().create(User( username = login["username"]!!, password = login["password"])))
                )
             }
 
             route("/{id}") {
                 get {
                     val id = call.parameters["id"]?.toInt() ?: throw MissingParamsException()
-                    call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().findById(id)))
+                    call.respond(JsonResponse(UserService().findById(id)))
                 }
 
                 put {
                     val principal = call.authentication.principal<User>() ?: throw AuthorizationException()
                     val entity = call.receive<User>()
                     if (principal.username != entity.username) throw AuthorizationException()
-                    call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().update(entity)))
+                    call.respond(JsonResponse(UserService().update(entity)))
                 }
 
                 delete {
                     val id = call.parameters["id"]?.toInt() ?: throw MissingParamsException()
-                    call.respond(JsonResponse(HttpStatusCode.OK.value, UserService().deleteById(id)))
+                    call.respond(JsonResponse(UserService().deleteById(id)))
                 }
             }
         }

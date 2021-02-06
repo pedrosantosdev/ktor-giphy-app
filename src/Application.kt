@@ -5,19 +5,16 @@ import io.ktor.response.*
 import io.ktor.features.*
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.gson.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
-import io.ktor.server.engine.*
 import io.pedro.santos.dev.modules.authorization.JwtConfig
-import io.pedro.santos.dev.modules.authorization.PostLogin
 import io.pedro.santos.dev.modules.authorization.authorization
 import io.pedro.santos.dev.modules.common.DatabaseFactory
 import io.pedro.santos.dev.modules.user.UserRepository
 import io.pedro.santos.dev.modules.user.user
-import java.lang.RuntimeException
 import java.lang.reflect.Modifier
+import java.text.DateFormat
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -43,21 +40,21 @@ fun Application.module(testing: Boolean = false) {
 
     install(StatusPages) {
         status(HttpStatusCode.NotFound) {
-            call.respond(HttpStatusCode.NotFound, JsonResponse(HttpStatusCode.NotFound.value, mapOf("message" to "not found"), "error"))
+            call.respond(HttpStatusCode.NotFound, JsonResponse( mapOf("message" to "not found"), "error"))
         }
         exception<AuthenticationException> { cause ->
-            call.respond(HttpStatusCode.Unauthorized, JsonResponse(HttpStatusCode.Unauthorized.value,mapOf("message" to cause.message), "error"))
+            call.respond(HttpStatusCode.Unauthorized, JsonResponse(mapOf("message" to cause.message), "error"))
         }
         exception<AuthorizationException> { cause ->
-            call.respond(HttpStatusCode.Forbidden, JsonResponse(HttpStatusCode.Forbidden.value,mapOf("message" to cause.message), "error"))
+            call.respond(HttpStatusCode.Forbidden, JsonResponse(mapOf("message" to cause.message), "error"))
         }
         exception<MissingParamsException> { cause ->
-            call.respond(HttpStatusCode.UnprocessableEntity, JsonResponse(HttpStatusCode.UnprocessableEntity.value, mapOf("message" to cause.message), "error"))
+            call.respond(HttpStatusCode.UnprocessableEntity, JsonResponse(mapOf("message" to cause.message), "error"))
         }
         exception<BadRequestException> { cause ->
-            call.respond(HttpStatusCode.BadRequest, JsonResponse(HttpStatusCode.BadRequest.value,mapOf("message" to cause.message), "error"))
+            call.respond(HttpStatusCode.BadRequest, JsonResponse(mapOf("message" to cause.message), "error"))
         }
-        exception<Throwable> { cause -> call.respond(HttpStatusCode.InternalServerError, JsonResponse(HttpStatusCode.InternalServerError.value, mapOf("message" to cause.message), "error")) }
+        exception<Throwable> { cause -> call.respond(HttpStatusCode.InternalServerError, JsonResponse(mapOf("message" to cause.message), "error")) }
     }
 
     install(ContentNegotiation) {
@@ -85,14 +82,14 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get("/") {
-            call.respond(HttpStatusCode.OK, JsonResponse(HttpStatusCode.OK.value, mapOf("message" to "API ACTIVE!")))
+            call.respond(HttpStatusCode.OK, JsonResponse(mapOf("message" to "API ACTIVE!")))
         }
         authorization()
         user()
     }
 }
 
-data class JsonResponse<T>(val status: Int = HttpStatusCode.OK.value, val data: T, val message: String = "Success")
+data class JsonResponse<T>(val data: T, val message: String = "Success")
 data class AuthenticationException(override val message: String = "Authentication failed") : Exception()
 data class AuthorizationException(override val message: String = "You are not authorised to use this service") : Exception()
 data class MissingParamsException(override val message: String = "Missing Params") : Exception()

@@ -41,13 +41,13 @@ object JwtConfig {
         .withExpiresAt(getExpiration(expiration))  // optional
         .sign(algorithm)
 
-    fun accessToken(user: User): Token = Token(generateToken(user, validityInMs), generateToken(user, refreshValidityInMs), getExpiration().toString())
+    fun accessToken(user: User): Token = Token(generateToken(user, validityInMs), generateToken(user, refreshValidityInMs), getExpiration())
 
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
     private fun getExpiration(validity: Long = validityInMs) = Date(System.currentTimeMillis() + validity)
 
-    data class Token(val access_token: String, val refresh_token: String, val expires_at: String)
+    data class Token(val access_token: String, val refresh_token: String, val expires_at: Date)
 
 }
