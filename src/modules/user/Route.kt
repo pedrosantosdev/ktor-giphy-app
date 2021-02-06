@@ -17,6 +17,10 @@ fun Route.user() {
                 call.respond(JsonResponse(UserService().findAll()))
             }
 
+            get ("/clear"){
+
+            }
+
             post {
                 val login = call.receive<Parameters>()
                 if (login["username"].isNullOrEmpty() || login["password"].isNullOrEmpty()) throw MissingParamsException()
