@@ -1,32 +1,23 @@
-name: Push Container to Heroku
+name: 'build'
 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-env:
-  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-  HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+    branches:
+      - master
+  pull_request:
 
 jobs:
   build:
+    name: 'Build'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Login to Heroku Container registry
-        run: heroku container:login
-      - name: Build and push
-        env:
-          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
-          SECRET: ${{ secrets.SECRET }}
-          DATABASE_USER: ${{ secrets.DATABASE_USER }}
-          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
-          DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
-          DATABASE_SCHEMA: ${{ secrets.DATABASE_SCHEMA }}
-        run: heroku container:push -a "$HEROKU_APP_NAME" web
-      - name: Release
-        run: heroku container:release -a "$HEROKU_APP_NAME" web
+      - name: "Build:checkout"
+        uses: actions/checkout@v2
+      - name: 'Build:dockerimage'
+        uses: docker/build-push-action@v1
+        with:
+          registry: ghcr.io
+          username: "pedrosantosdev"
+          password: ${{ secrets.PAT }}
+          repository: pedrosantosdev/giphy-app/ktor
+          tags: latest

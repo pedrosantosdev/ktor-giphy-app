@@ -14,13 +14,13 @@ ARG DATABASE_HOST
 ARG DATABASE_PORT
 ARG DATABASE_SCHEMA
 
-RUN echo $ENVIRONMENT
 # Copy Src
 COPY . /appbuild
 # Build Project Without Test Stage
 RUN gradle clean build -x test
 
 FROM openjdk:8-jre-alpine
+LABEL org.opencontainers.image.source https://github.com/pedrosantosdev/ktor-giphy-app
 
 ENV APPLICATION_USER ktor
 RUN adduser -D -g '' $APPLICATION_USER

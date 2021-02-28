@@ -20,4 +20,8 @@ class UserService {
     suspend fun deleteById(id: Int): Int {
         return UserRepository().deleteById(id)
     }
+
+    suspend fun deleteDeactivated(): Int {
+        return UserRepository().deleteDeactivatedUser()
+    }
 }

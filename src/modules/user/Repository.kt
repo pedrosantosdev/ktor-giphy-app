@@ -1,11 +1,14 @@
 package io.pedro.santos.dev.modules.user
 
+import io.ktor.util.date.*
 import io.pedro.santos.dev.BadRequestException
 import io.pedro.santos.dev.modules.common.DatabaseFactory.dbQuery
 import io.pedro.santos.dev.modules.common.Repository
 import org.jetbrains.exposed.sql.*
 import org.joda.time.DateTime
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import java.text.SimpleDateFormat
+import java.util.*
 
 class UserRepository: Repository<User> {
     override suspend fun findAll(): Iterable<User> =
@@ -29,14 +32,12 @@ class UserRepository: Repository<User> {
         dbQuery {
             UsersTable.select{
                 UsersTable.username eq username
-//                UsersTable.deletedAt eq null
-            }.limit(1).map{
+            }.andWhere { UsersTable.deletedAt eq null }.limit(1).map{
                 toUser(it)
             }.firstOrNull()
         }
 
     override suspend fun create(entity: User): User? {
-        println(findByUsername(entity.username))
         if (findByUsername(entity.username) != null) throw BadRequestException("Username already taken")
 
         val id = dbQuery {
@@ -62,7 +63,7 @@ class UserRepository: Repository<User> {
         return findById(entity.id)
     }
 
-    suspend fun changePassword(id: Int, password: String) {
+    private suspend fun changePassword(id: Int, password: String) {
         dbQuery {
             UsersTable.update({ UsersTable.id eq id }, limit = 1) {
                 it[UsersTable.password] = BCryptPasswordEncoder().encode(password)
@@ -78,6 +79,13 @@ class UserRepository: Repository<User> {
                 it[UsersTable.deletedAt] = DateTime.now()
             }
         }
+
+    suspend fun  deleteDeactivatedUser(days: Int = 30): Int {
+        val diff = Calendar.getInstance().add(Calendar.DAY_OF_YEAR, -days)
+        return dbQuery {
+            UsersTable.deleteWhere { UsersTable.modifiedAt lessEq (SimpleDateFormat("yyyy-MM-dd").format(diff)) }
+        }
+    }
 
     private fun toUser(row: ResultRow): User =
         User(

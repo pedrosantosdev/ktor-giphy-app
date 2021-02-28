@@ -13,12 +13,12 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseFactory {
 
     private val appConfig = HoconApplicationConfig(ConfigFactory.load())
-    private val dbUser = appConfig.property("db.dbUser").getString()
-    private val dbPassword = appConfig.property("db.dbPassword").getString()
-    private val dbHost = appConfig.property("db.dbHost").getString()
-    private val dbPort = appConfig.property("db.dbPort").getString()
-    private val dbSchema = appConfig.property("db.dbSchema").getString()
-    private val dbUrl = "jdbc:postgresql://${dbHost}:${dbPort}/${dbSchema}"
+    private val dbUser = appConfig.property("db.User").getString()
+    private val dbPassword = appConfig.property("db.Password").getString()
+    private val dbHost = appConfig.property("db.Host").getString()
+    private val dbPort = appConfig.property("db.Port").getString()
+    private val dbSchema = appConfig.property("db.Schema").getString()
+    private val dbUrl = appConfig.propertyOrNull("db.Url")?.getString() ?: "jdbc:postgresql://${dbHost}:${dbPort}/${dbSchema}"
 
     fun init() {
         Database.connect(dataSource())

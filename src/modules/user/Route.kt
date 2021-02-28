@@ -18,7 +18,7 @@ fun Route.user() {
             }
 
             get ("/clear"){
-
+                call.respond(JsonResponse(UserService().deleteDeactivated()))
             }
 
             post {
